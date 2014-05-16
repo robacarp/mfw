@@ -16,10 +16,21 @@ class Image < ActiveRecord::Base
                   .map(&:strip)
                   .uniq
                   .reject {|t| t.blank? }
-                  .reject {|t| current_tags.include? t }
-                  .map {|t| Tag.from_text t }
 
-    tags << new_tags
+    to_be_deleted = current_tags - new_tags
+    to_be_created = new_tags - current_tags
+
+    to_be_created.each do |t|
+      tag = Tag.from_text t
+      self.tags << tag
+    end
+
+    to_be_deleted.each do |t|
+      tag = Tag.from_text t
+      tag.images.delete self
+    end
+
+    tag_group
   end
 
   def self.files

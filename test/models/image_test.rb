@@ -26,12 +26,12 @@ class ImageTest < ActiveSupport::TestCase
   end
 
   def test_auto_creates_tags_from_string
-    string = "foo,bar"
+    tags = %w|foo bar|
     img = Image.rand
-    img.tag_group = string
+    img.tag_group = tags.join(', ')
 
-    string.split(',').each do |tag|
-      assert img.tags.map(&:name).include?(tag), "should have assigned #{tag}"
+    tags.each do |tag|
+      assert img.tags.map(&:name).include?(tag), "should have assigned '#{tag}', actually assigned '#{img.tag_group}'"
     end
 
     img.tags = []
@@ -45,5 +45,19 @@ class ImageTest < ActiveSupport::TestCase
     assert_equal 1, img.tags.count, "duplicate tags should not get inserted"
     img.tag_group = "tag2 , tag3"
     assert_equal 2, img.tags.count, "spacing around tags shouldn't matter"
+  end
+
+  def test_auto_deletes_tags_when_updated_by_string
+    img = Image.rand
+    img.tag_group = "one, two"
+
+    img.reload
+    tags = %w|three four|
+    img.tag_group = tags.join(', ')
+    assert_equal 2, img.tags.count
+
+    tags.each do |tag|
+      assert img.tags.map(&:name).include?(tag), "should have assigned '#{tag}'"
+    end
   end
 end
