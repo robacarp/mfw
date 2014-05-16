@@ -1,0 +1,7 @@
+= form_for @random_image do |f|
+  %img{src: "#{@random_image.full_path}"}
+  - @random_image.tags.each do |tag|
+    = tag.name
+  = f.text_field :tag_group
+  = f.submit
+
